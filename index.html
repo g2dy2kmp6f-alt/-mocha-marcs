@@ -154,6 +154,8 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 .app-banner-icon{font-size:2.2rem}.app-banner-copy{display:flex;flex-direction:column;line-height:1.12}.app-banner-copy strong{font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}.app-banner-copy span{font-size:.88rem;font-weight:700;opacity:1;margin-top:6px}.app-banner-cta{font-size:.9rem;font-weight:1000;background:#ffd05c;color:#5a2109;padding:12px 14px;border-radius:13px;white-space:nowrap;box-shadow:0 4px 10px rgba(70,24,4,.22)}
 @keyframes appPulse{0%,100%{transform:scale(1);box-shadow:0 14px 30px rgba(89,34,7,.30),0 0 0 4px #f4c96f}50%{transform:scale(1.015);box-shadow:0 18px 36px rgba(89,34,7,.42),0 0 0 5px #ffd878}}
 @media(max-width:520px){.app-banner{grid-template-columns:auto 1fr;padding:16px 15px}.app-banner-cta{grid-column:1/-1;text-align:center;padding:11px;font-size:1rem}.app-banner-copy strong{font-size:1.08rem}.app-banner-copy span{font-size:.82rem}}
+
+.name-modal{position:fixed;inset:0;background:rgba(34,15,7,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}.name-modal.hidden{display:none}.name-modal-card{width:min(420px,100%);background:#fffaf1;border:1px solid #c9955f;border-radius:22px;padding:22px;box-shadow:0 20px 50px rgba(33,13,4,.35)}.name-modal-card h2{margin-top:0}.name-modal-card input{font-size:16px}
 </style>
 </head>
 <body>
@@ -195,10 +197,20 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <div class="small">Choose ASAP for pickup as soon as possible today, or select a scheduled time.</div>
 </div>
 <label>Special instructions</label><textarea id="notes" rows="3" placeholder="Optional"></textarea>
+<div class="card" style="margin-top:18px;border:2px solid #8a4b24;background:#fff7e9"><h3 style="margin-top:0">CUSTOMER NAME — ENTER HERE BEFORE SENDING</h3><p class="small">Missed your name earlier? Enter it here. You do not need to go back.</p><input id="orderName" autocomplete="name" placeholder="Enter your first name" style="font-size:18px"></div>
 <div class="favrow"><button class="primary" onclick="submitOrder()">Send Order to Marc</button><button class="secondary" onclick="saveFavorite()">♡ Save Favorite</button></div>
 <div id="msg"></div>
 </div>
 </section>
+
+<div id="nameModal" class="name-modal hidden" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
+<div class="name-modal-card">
+<h2 id="nameModalTitle">What’s your name?</h2>
+<p class="small">Enter your name so Marc knows who this order is for.</p>
+<input id="checkoutName" autocomplete="name" placeholder="First name">
+<div class="favrow" style="margin-top:14px"><button class="primary" type="button" onclick="continueOrderWithName()">Continue Order</button><button class="secondary" type="button" onclick="closeNameModal()">Cancel</button></div>
+<div id="nameModalMsg"></div>
+</div></div>
 
 <section id="favorites" class="hidden"><div id="favList"></div></section>
 <section id="mine" class="hidden"><div class="card"><h2>Order Notifications</h2><p class="small">Get a notification when Marc marks your order Ready.</p><button id="customerNotifyBtn" class="primary" onclick="enableCustomerNotifications()">🔔 Enable Ready Notifications</button><div id="customerNotifyMsg" class="small" style="margin-top:8px"></div></div><div id="myOrders"></div></section>
@@ -320,7 +332,7 @@ function chooseDrink(d,preset=null){
    const draw=()=>{const pumps=Number(target[n]||0);b.textContent=pumpLabel(n,pumps);b.classList.toggle("on",pumps>0)};
    b.onclick=()=>{const next=(Number(target[n]||0)+1)%4;if(next)target[n]=next;else delete target[n];draw()}; draw(); flavors.appendChild(b);
  });
- notes.value=base?.notes||""; initPickup(); if(base?.customizations?.pickup_date)pickupDate.value=base.customizations.pickup_date; if(base?.customizations?.pickup_time)pickupTime.value=base.customizations.pickup_time; renderIncluded();
+ notes.value=base?.notes||""; const orderNameEl=document.getElementById("orderName"); const firstNameEl=document.getElementById("customerName"); if(orderNameEl) orderNameEl.value=(firstNameEl?.value||localStorage.mmName||"").trim(); initPickup(); if(base?.customizations?.pickup_date)pickupDate.value=base.customizations.pickup_date; if(base?.customizations?.pickup_time)pickupTime.value=base.customizations.pickup_time; renderIncluded();
  order.classList.add("hidden");customize.classList.remove("hidden");
 }
 function backToMenu(){customize.classList.add("hidden");order.classList.remove("hidden")}
@@ -369,7 +381,20 @@ async function enablePush(role,msgId){
 function enableBaristaNotifications(){return enablePush("barista","baristaNotifyMsg")}
 function enableCustomerNotifications(){return enablePush("customer","customerNotifyMsg")}
 async function submitOrder(){
- const name=customerName.value.trim(); if(!name){msg.innerHTML='<div class="notice">Enter your name first.</div>';return}
+ const orderNameEl=document.getElementById("orderName");
+ const firstNameEl=document.getElementById("customerName");
+ const name=(orderNameEl?.value||firstNameEl?.value||localStorage.mmName||"").trim();
+ if(!name){
+  msg.innerHTML='<div class="notice">Please enter your name above before sending your order.</div>';
+  if(orderNameEl){orderNameEl.focus();orderNameEl.scrollIntoView({behavior:"smooth",block:"center"});}
+  return;
+ }
+ if(firstNameEl)firstNameEl.value=name;
+ if(orderNameEl)orderNameEl.value=name;
+ localStorage.mmName=name;
+ await sendCurrentOrder(name);
+}
+async function sendCurrentOrder(name){
  if(pickupTime.value==="ASAP"&&pickupDate.value!==localDateKey(new Date())){msg.innerHTML='<div class="notice">ASAP pickup is only available for today.</div>';return}
  localStorage.mmName=name; const p=orderPayload();
  try{
@@ -378,6 +403,7 @@ async function submitOrder(){
   msg.innerHTML='<div class="notice">☕ Order sent to Marc!<br><button class="primary" style="margin-top:10px" onclick="enableCustomerNotifications()">🔔 Notify Me When It’s Ready</button><div id="customerNotifyMsg" class="small" style="margin-top:8px"></div></div>';
  }catch(e){msg.innerHTML='<div class="notice">Could not send order. '+e.message+'</div>'}
 }
+
 function saveFavorite(){
  const p=orderPayload(); const name=prompt("Name this favorite:",current.name);if(!name)return;
  const fs=JSON.parse(localStorage.mmFavs||"[]");fs.push({name,...p});localStorage.mmFavs=JSON.stringify(fs);alert("Favorite saved.");
@@ -424,11 +450,11 @@ async function setStatus(id,status){
    alert("Could not update this order status. "+e.message);
  }
 }
-renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
+renderMenu(); if(localStorage.mmName){customerName.value=localStorage.mmName; const on=document.getElementById("orderName"); if(on)on.value=localStorage.mmName;}
 let deferredInstallPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
 document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=14",{updateViaCache:"none"}).catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=14-namefix5-20261015",{updateViaCache:"none"}).catch(()=>{}))}
 </script>
 <script>
 (function(){
@@ -436,5 +462,5 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
   if(standalone){ const b=document.getElementById('appBanner'); if(b) b.classList.add('hidden'); }
 })();
 </script>
-<!-- Mocha Marcs GitHub build v14 share app -->
+<!-- Mocha Marcs GitHub build v14 name fix 5 20261015 -->
 </body></html>
