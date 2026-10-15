@@ -165,6 +165,7 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <button id="tabMine" onclick="showTab('mine')">My Orders</button>
 <button id="tabBarista" onclick="showTab('barista')">Barista</button>
 </div>
+<button id="shareAppBtn" class="secondary" type="button" onclick="shareMochaMarcs()" style="width:100%;margin:10px 0 4px;font-weight:900">↗ Share Mocha Marc’s</button>
 <div id="appBanner" class="app-banner" onclick="showTab('app')" role="button" tabindex="0" aria-label="Get the Mocha Marc’s App">
   <div class="app-banner-icon">📱</div>
   <div class="app-banner-copy"><strong>📲 Get the Mocha Marc’s App</strong><span>One tap from your Home Screen — install it now</span></div>
@@ -214,6 +215,7 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <div id="iosInstall" class="notice"><strong>iPhone / iPad</strong><br>1. Open this site in Safari.<br>2. Tap the Share button.<br>3. Tap <strong>Add to Home Screen</strong>.<br>4. Tap <strong>Add</strong>.</div>
 <div id="androidInstall" class="notice"><strong>Android</strong><br>Open this site in Chrome, tap the menu, then choose <strong>Add to Home screen</strong> or <strong>Install app</strong>.</div>
 <button id="installBtn" class="primary hidden" type="button">Install Mocha Marc’s</button>
+<button class="secondary" type="button" onclick="shareMochaMarcs()" style="width:100%;margin-top:12px">↗ Share Mocha Marc’s with a Friend</button>
 </div>
 </section>
 </main>
@@ -239,6 +241,15 @@ const drinks = [
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel"];
 const sauceNames=["White Chocolate Sauce","Caramel Sauce","Chocolate Sauce"];
 let current=null, chosenSyrups={}, chosenSauces={};
+
+async function shareMochaMarcs(){
+ const shareData={title:"Mocha Marc’s Coffee Shop",text:"☕ Mocha Marc’s Coffee Shop — order your coffee here! Add Mocha Marc’s to your Home Screen for easy ordering.",url:window.location.href.split("#")[0]};
+ try{
+  if(navigator.share){await navigator.share(shareData);return}
+  await navigator.clipboard.writeText(shareData.url);
+  alert("Mocha Marc’s link copied. Send it to your friend!");
+ }catch(e){if(e?.name!=="AbortError")alert("Could not open sharing. Copy this link from Safari and send it to your friend.")}
+}
 
 function showTab(id){
  ["order","customize","favorites","mine","barista","app"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));
@@ -417,7 +428,7 @@ renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
 let deferredInstallPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
 document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=13",{updateViaCache:"none"}).catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=14",{updateViaCache:"none"}).catch(()=>{}))}
 </script>
 <script>
 (function(){
@@ -425,5 +436,5 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
   if(standalone){ const b=document.getElementById('appBanner'); if(b) b.classList.add('hidden'); }
 })();
 </script>
-<!-- Mocha Marcs GitHub build v13 notifications fix -->
+<!-- Mocha Marcs GitHub build v14 share app -->
 </body></html>
