@@ -1,21 +1,19 @@
-Mocha Marc's polished GitHub Pages build
+Mocha Marc's — mockup-style GitHub build
 
-This version follows Marc's established rules:
-- No sizes, prices, payments, checkout, or tipping.
-- Coffee menu: Espresso, Americano, Latte, Cappuccino, Mocha, Iced Coffee, Cold Brew.
-- Specialty menu retains the existing app drinks, including Iced Latte, Iced Mocha,
-  Iced Caramel Macchiato, Brown Sugar Shaken Espresso,
-  Iced White Chocolate Cinnamon Dolce Latte, and Hazelnut Cream if present in the build.
-- Milk choices remain 2% Milk and Oat Milk only.
-- Espresso: 1/2/3 shots only; no milk, syrup, sauce, or cold foam.
-- Cappuccino: no syrup choices.
-- Brown Sugar Shaken Espresso: Vanilla + Brown Sugar are fixed recipe ingredients;
-  no customer syrup/sauce list.
-- Iced Caramel Macchiato: Vanilla + Caramel Sauce are fixed recipe ingredients;
-  no customer syrup/sauce list.
-- Barista Board shows customer-selected syrup/sauce pump counts.
-- Barista New / Making / Ready / Done status buttons work with the existing Supabase setup.
-- Existing exact logo, Favorites, My Orders, PIN 1973, and app connection are retained.
-- Polished cream/brown café layout with smaller header and compact menu cards.
+Visual:
+- Three-column coffee tile menu inspired by the approved mockup.
+- Compact logo/header and segmented navigation.
+- Cleaner customization and Barista Board cards.
 
-Upload the four files to the existing GitHub repository and commit directly to main.
+Rules:
+- No sizes or prices.
+- Only Marc's established drinks.
+- Milk: 2% or Oat only.
+- Espresso: shots only.
+- Cappuccino: no syrups.
+- Brown Sugar Shaken Espresso and Iced Caramel Macchiato: fixed recipe flavoring, no syrup/sauce picker.
+- Iced White Chocolate Cinnamon Dolce Latte defaults to 2 Cinnamon Dolce + 2 White Chocolate and remains adjustable.
+- Syrup/sauce pump counts appear on Barista Board.
+
+Important:
+The existing Supabase database currently has SELECT and INSERT policies for anonymous users but no UPDATE policy. The status-button JavaScript is present, but Supabase must grant a secure update path before New/Making/Ready/Done can persist.
