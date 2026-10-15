@@ -417,7 +417,7 @@ function renderFavorites(){
 async function loadMyOrders(){
  const ids=JSON.parse(localStorage.mmOrderIds||"[]"); if(!ids.length){myOrders.innerHTML="<div class='card'>No orders from this device yet.</div>";return}
  try{const rows=await api(`orders?select=id,created_at,drink,status,milk,shots,notes,customizations&order=created_at.desc&id=in.(${ids.join(",")})`);
- myOrders.innerHTML=rows.map(r=>`<div class="card"><h3>${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small"><b>Pickup:</b> ${pickupLabel(r.customizations)||"Not specified"}</div><div class="small">Ordered ${new Date(r.created_at).toLocaleString()}</div></div>`).join("")}
+ myOrders.innerHTML=rows.map(r=>{const c=r.customizations||{};const reply=c.barista_response?`<div class="notice" style="margin-top:10px"><b>Mocha Marc’s:</b> ${c.barista_response}</div>`:"";return `<div class="card"><h3>${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small"><b>Pickup:</b> ${pickupLabel(c)||"Not specified"}</div>${reply}<div class="small">Ordered ${new Date(r.created_at).toLocaleString()}</div></div>`}).join("")}
  catch(e){myOrders.innerHTML="<div class='notice'>Could not load orders.</div>"}
 }
 function unlock(){if(pin.value==="1973"){pinGate.classList.add("hidden");board.classList.remove("hidden");loadBoard()}else alert("Incorrect PIN")}
@@ -439,8 +439,16 @@ async function loadBoard(){
  try{const rows=await api("orders?select=id,created_at,customer_name,drink,milk,shots,customizations,notes,status&status=neq.Done&order=created_at.asc");
  boardOrders.innerHTML=rows.length?"":"<p>No active orders.</p>";
  rows.forEach(r=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${r.customer_name} — ${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${r.milk||""} ${r.shots!=null?(" • "+r.shots+" shots"):""}</div>${baristaDetails(r)}${r.notes?`<p><b>Note:</b> ${r.notes}</p>`:""}<div class="favrow"></div>`;
- ["New","Making","Ready","Done"].forEach(s=>{let b=document.createElement("button");b.className="secondary";b.textContent=s;b.onclick=()=>setStatus(r.id,s);c.lastElementChild.appendChild(b)});boardOrders.appendChild(c)});
+ if(r.status==="New"){let a=document.createElement("button");a.className="primary";a.textContent="☕ Accept Order";a.onclick=()=>respondToOrder(r,true);c.lastElementChild.appendChild(a);let d=document.createElement("button");d.className="secondary";d.textContent="✕ Can’t Complete";d.onclick=()=>respondToOrder(r,false);c.lastElementChild.appendChild(d)}["Making","Ready","Done"].forEach(s=>{let b=document.createElement("button");b.className="secondary";b.textContent=s;b.onclick=()=>setStatus(r.id,s);c.lastElementChild.appendChild(b)});boardOrders.appendChild(c)});
  }catch(e){boardOrders.innerHTML="<div class='notice'>Could not load the Barista Board. "+e.message+"</div>"}
+}
+async function respondToOrder(r,accepted){
+ const response=accepted?"Order confirmed! Mocha Marc’s has accepted your order. We’ll let you know when it’s ready.":"Sorry, your order can’t be completed at this time. Please try again during normal Mocha Marc’s business hours.";
+ const c={...(r.customizations||{}),barista_response:response,order_accepted:!!accepted,response_at:new Date().toISOString()};
+ try{
+   await api(`orders?id=eq.${r.id}`,{method:"PATCH",body:JSON.stringify({status:accepted?"Making":"Done",customizations:c})});
+   await loadBoard();
+ }catch(e){alert("Could not send response. "+e.message)}
 }
 async function setStatus(id,status){
  try{
@@ -454,7 +462,7 @@ renderMenu(); if(localStorage.mmName){customerName.value=localStorage.mmName; co
 let deferredInstallPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
 document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=14-namefix5-20261015",{updateViaCache:"none"}).catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=14-order-response-v6-20261015",{updateViaCache:"none"}).catch(()=>{}))}
 </script>
 <script>
 (function(){
@@ -462,5 +470,5 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
   if(standalone){ const b=document.getElementById('appBanner'); if(b) b.classList.add('hidden'); }
 })();
 </script>
-<!-- Mocha Marcs GitHub build v14 name fix 5 20261015 -->
+<!-- Mocha Marcs GitHub build v14 order response v6 20261015 -->
 </body></html>

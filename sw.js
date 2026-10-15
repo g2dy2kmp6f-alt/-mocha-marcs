@@ -1,4 +1,4 @@
-const CACHE="mocha-marcs-v14-namefix5-20261015";
+const CACHE="mocha-marcs-v14-order-response-v6-20261015";
 const ASSETS=["./","./index.html","./manifest.webmanifest","./logo.png","./espresso.jpg","./americano.jpg","./latte.jpg","./cappuccino.jpg","./mocha.jpg","./iced-coffee.jpg","./iced-latte.jpg","./iced-mocha.jpg","./iced-caramel-macchiato.jpg","./brown-sugar-shaken-espresso.jpg","./iced-white-chocolate-cinnamon-dolce-latte.jpg","./hazelnut-cream-americano.jpg"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>{e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))]))});
