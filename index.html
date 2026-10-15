@@ -149,6 +149,11 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 .stepper button{width:40px;height:40px;border-radius:50%;border:1px solid #a9683f;background:#fff8ef;color:#6b321b;font-size:1.35rem;font-weight:800}
 .stepper strong{min-width:26px;text-align:center;font-size:1.1rem}
 .customize-heading{margin-top:22px;border-top:2px solid #d7b383;padding-top:18px}
+
+.app-banner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;margin:0 0 16px;padding:15px 16px;border-radius:18px;background:linear-gradient(135deg,#6f2f12,#a85a27);color:#fff;box-shadow:0 12px 24px rgba(75,30,9,.22);cursor:pointer;border:2px solid #e3ae64;animation:appPulse 2.8s ease-in-out infinite}
+.app-banner-icon{font-size:1.8rem}.app-banner-copy{display:flex;flex-direction:column;line-height:1.15}.app-banner-copy strong{font-size:1.03rem}.app-banner-copy span{font-size:.76rem;opacity:.9;margin-top:4px}.app-banner-cta{font-size:.76rem;font-weight:900;background:#fff4df;color:#6f2f12;padding:9px 10px;border-radius:11px;white-space:nowrap}
+@keyframes appPulse{0%,100%{transform:translateY(0);box-shadow:0 12px 24px rgba(75,30,9,.20)}50%{transform:translateY(-2px);box-shadow:0 15px 30px rgba(75,30,9,.30)}}
+@media(max-width:520px){.app-banner{grid-template-columns:auto 1fr;padding:13px 14px}.app-banner-cta{grid-column:1/-1;text-align:center;padding:8px}.app-banner-copy strong{font-size:1rem}}
 </style>
 </head>
 <body>
@@ -159,7 +164,11 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <button id="tabFav" onclick="showTab('favorites')">Favorites</button>
 <button id="tabMine" onclick="showTab('mine')">My Orders</button>
 <button id="tabBarista" onclick="showTab('barista')">Barista</button>
-<button id="tabApp" onclick="showTab('app')">Get App</button>
+</div>
+<div id="appBanner" class="app-banner" onclick="showTab('app')" role="button" tabindex="0" aria-label="Get the Mocha Marc’s App">
+  <div class="app-banner-icon">📱</div>
+  <div class="app-banner-copy"><strong>Get the Mocha Marc’s App</strong><span>Add to your Home Screen for one-tap ordering</span></div>
+  <div class="app-banner-cta">GET APP →</div>
 </div>
 
 <section id="order">
@@ -368,5 +377,11 @@ let deferredInstallPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
 document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
+</script>
+<script>
+(function(){
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if(standalone){ const b=document.getElementById('appBanner'); if(b) b.classList.add('hidden'); }
+})();
 </script>
 </body></html>
