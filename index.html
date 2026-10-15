@@ -56,6 +56,60 @@ label{display:block;font-weight:750;margin:12px 0 6px;font-size:.9rem}select,inp
  #menu .drink h3{font-size:.79rem}
  #menu .drink .primary{font-size:.73rem}
 }
+
+/* Mocha Marc's richer café refresh */
+:root{--cream:#fff7e9;--paper:#fffdf8;--ink:#2b160d;--brown:#6f2f12;--brown2:#9b4d1f;--caramel:#d28a3a;--gold:#e7b45c;--latte:#ead1ad;--line:#d8b98f}
+body{background:
+ radial-gradient(circle at 15% 8%,rgba(231,180,92,.25),transparent 25%),
+ radial-gradient(circle at 90% 20%,rgba(155,77,31,.12),transparent 24%),
+ linear-gradient(180deg,#fff6e5,#f4e0c4 70%,#efd4af);color:var(--ink)}
+header{padding-top:18px}
+.logo{width:154px!important;height:154px!important;filter:drop-shadow(0 8px 12px rgba(62,29,10,.18))}
+nav{background:rgba(255,253,248,.93);border:1px solid rgba(111,47,18,.18);box-shadow:0 8px 20px rgba(75,37,13,.10)}
+nav button.active,.primary{background:linear-gradient(135deg,#6f2f12,#9b4d1f)!important;color:#fff!important}
+.card{background:rgba(255,253,248,.94);border-color:rgba(111,47,18,.18);box-shadow:0 12px 28px rgba(75,37,13,.09)}
+#menu .drink{position:relative;overflow:hidden;min-height:168px;background:linear-gradient(160deg,#fffaf1,#efd2aa);border:1px solid rgba(111,47,18,.18);box-shadow:0 7px 16px rgba(76,35,12,.10)}
+#menu .drink:before{content:attr(data-art)!important;width:76px!important;height:76px!important;font-size:42px!important;background:radial-gradient(circle,#fffdf7 0 58%,#e5bc80 60% 64%,transparent 66%)!important;filter:drop-shadow(0 5px 5px rgba(68,30,10,.15))}
+#menu .drink:nth-of-type(3n+1){background:linear-gradient(155deg,#fff9ee,#e9c18e)}
+#menu .drink:nth-of-type(3n+2){background:linear-gradient(155deg,#fff9ee,#f0d7b5)}
+#menu .drink:nth-of-type(3n){background:linear-gradient(155deg,#fff9ee,#e4bd92)}
+#menu .drink h3{color:#32180c;font-weight:800}
+#menu>h2{color:#6f2f12!important}
+label{color:#32180c}
+.chip{background:#fffaf2;border:1px solid #dfc39f}
+.chip.on{background:linear-gradient(135deg,#f0d0a5,#e4b77d);border-color:#a45a28}
+#boardOrders>.card{border-top:5px solid var(--caramel);background:#fffaf1}
+@media(max-width:520px){.logo{width:138px!important;height:138px!important}#menu .drink{min-height:156px}#menu .drink:before{width:68px!important;height:68px!important;font-size:38px!important}}
+
+/* FINAL VISUAL PASS — exact existing logo.png */
+header{padding:20px 12px 12px;background:linear-gradient(180deg,#3a190d,#743719 66%,#f3ddbd 67%,transparent);border-radius:0 0 34px 34px;margin-bottom:12px}
+.logo{width:190px!important;height:190px!important;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(33,13,4,.35))}
+body{background:linear-gradient(180deg,#f4d7ad,#fff8ed 45%,#edc99b);color:#2a160d}
+nav{background:#fff9ef;border:1px solid #c8945b;box-shadow:0 10px 24px rgba(62,27,9,.15)}
+#order>.card{background:rgba(255,250,241,.97);border:1px solid #d2a36e}
+#menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#menu>h2{grid-column:1/-1;margin:24px 0 4px;font-size:1.42rem;color:#6f2f12!important}
+#menu .drink{min-height:218px;padding:0 0 12px;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;background:#fffaf1!important;border:1px solid #c9955f;border-radius:22px;box-shadow:0 10px 22px rgba(69,30,9,.12);overflow:hidden}
+#menu .drink:before{content:attr(data-symbol)!important;display:grid!important;place-items:center;width:100%!important;height:128px!important;margin:0 0 12px!important;border-radius:0!important;background:var(--drink-bg)!important;font-size:64px!important;box-shadow:none!important;filter:none!important}
+#menu .drink>div{padding:0 13px;min-height:50px}
+#menu .drink h3{font-size:1rem;line-height:1.12;color:#2c150b;margin:0;font-weight:850}
+#menu .drink .small{display:block;font-size:.72rem;color:#8b674f;margin-top:4px}
+#menu .drink .primary{margin:10px 12px 0;width:calc(100% - 24px);padding:9px;border-radius:12px}
+.drink[data-kind="espresso"]{--drink-bg:linear-gradient(145deg,#8d4824,#3a150b)}
+.drink[data-kind="americano"]{--drink-bg:linear-gradient(145deg,#a85a2c,#4b1b0c)}
+.drink[data-kind="latte"]{--drink-bg:linear-gradient(145deg,#efc48c,#a55d2d)}
+.drink[data-kind="cappuccino"]{--drink-bg:linear-gradient(145deg,#f6ddba,#b8743c)}
+.drink[data-kind="mocha"]{--drink-bg:linear-gradient(145deg,#9c5731,#432014)}
+.drink[data-kind="iced"]{--drink-bg:linear-gradient(145deg,#f0c07f,#8b431e)}
+.drink[data-kind="coldbrew"]{--drink-bg:linear-gradient(145deg,#78401f,#241008)}
+.drink[data-kind="caramel"]{--drink-bg:linear-gradient(145deg,#f0c17c,#b7611f)}
+.drink[data-kind="brown"]{--drink-bg:linear-gradient(145deg,#d38b4c,#6a2b13)}
+.drink[data-kind="icedmocha"]{--drink-bg:linear-gradient(145deg,#a76543,#4a2113)}
+.drink[data-kind="white"]{--drink-bg:linear-gradient(145deg,#f7e6c9,#c98c52)}
+.drink[data-kind="hazelnut"]{--drink-bg:linear-gradient(145deg,#d7a16c,#6d3217)}
+.status.New{background:#f4d7a6;color:#6f3c10}.status.Making{background:#d8a45f;color:#442006}.status.Ready{background:#b8d7ad;color:#24451d}.status.Done{background:#d4d0ca;color:#49433d}
+#boardOrders>.card{border-top:0!important;border-left:6px solid #c77b35;background:#fffaf1}
+@media(max-width:520px){header{padding-top:16px}.logo{width:172px!important;height:172px!important}#menu{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#menu .drink{min-height:205px}#menu .drink:before{height:118px!important;font-size:58px!important}#menu .drink h3{font-size:.92rem}}
 </style>
 </head>
 <body>
@@ -133,6 +187,8 @@ function renderMenu(){
    const h=document.createElement("h2");h.textContent=group==="regular"?"Coffee":"Marc's Specialty Drinks";menu.appendChild(h);
    drinks.filter(d=>d.type===group).forEach(d=>{
     const c=document.createElement("div");c.className="card drink";
+    const kinds={"Espresso":["espresso","☕"],"Americano":["americano","♨️"],"Latte":["latte","🥛"],"Cappuccino":["cappuccino","☁️"],"Mocha":["mocha","🍫"],"Iced Coffee":["iced","🧊"],"Cold Brew":["coldbrew","🧋"],"Iced Latte":["iced","🥤"],"Iced Mocha":["icedmocha","🍫"],"Iced Caramel Macchiato":["caramel","🍮"],"Brown Sugar Shaken Espresso":["brown","🧋"],"Iced White Chocolate Cinnamon Dolce Latte":["white","🤍"],"Hazelnut Cream":["hazelnut","🌰"]};
+    const visual=kinds[d.name]||["latte","☕"]; c.dataset.kind=visual[0]; c.dataset.symbol=visual[1];
     c.innerHTML=`<div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
     c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
    });
@@ -224,7 +280,7 @@ async function setStatus(id,status){
    await api(`orders?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({status})});
    await loadBoard();
  }catch(e){
-   alert("Status update is blocked by the current Supabase permissions. The page code is ready, but the database needs UPDATE permission for order status.");
+   alert("Could not update this order status. "+e.message);
  }
 }
 renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
