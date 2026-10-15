@@ -159,6 +159,7 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <button id="tabFav" onclick="showTab('favorites')">Favorites</button>
 <button id="tabMine" onclick="showTab('mine')">My Orders</button>
 <button id="tabBarista" onclick="showTab('barista')">Barista</button>
+<button id="tabApp" onclick="showTab('app')">Get App</button>
 </div>
 
 <section id="order">
@@ -191,6 +192,16 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <div id="pinGate" class="card"><h2>Marc's Barista Board</h2><label>PIN</label><input id="pin" inputmode="numeric" type="password"><button class="primary" style="margin-top:10px" onclick="unlock()">Open Board</button></div>
 <div id="board" class="hidden"><div class="card"><h2>Barista Board</h2><button class="secondary" onclick="loadBoard()">Refresh</button><div id="boardOrders"></div></div></div>
 </section>
+
+<section id="app" class="hidden">
+<div class="card">
+<h2>Get the Mocha Marc’s App</h2>
+<p class="small">Add Mocha Marc’s to your Home Screen for one-tap access.</p>
+<div id="iosInstall" class="notice"><strong>iPhone / iPad</strong><br>1. Open this site in Safari.<br>2. Tap the Share button.<br>3. Tap <strong>Add to Home Screen</strong>.<br>4. Tap <strong>Add</strong>.</div>
+<div id="androidInstall" class="notice"><strong>Android</strong><br>Open this site in Chrome, tap the menu, then choose <strong>Add to Home screen</strong> or <strong>Install app</strong>.</div>
+<button id="installBtn" class="primary hidden" type="button">Install Mocha Marc’s</button>
+</div>
+</section>
 </main>
 
 <script>
@@ -204,7 +215,7 @@ const drinks = [
  {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false,included:["Chocolate Sauce","Whipped Cream"]},
  {name:"Iced Coffee",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:true},
  {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:true,included:["Cinnamon Sugar"]},
- {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,included:["Chocolate Sauce","Whipped Cream"]},
+ {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:true,included:["Chocolate Sauce","Whipped Cream"]},
  {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Caramel":2},sauces:{"Caramel Sauce":2}}},
  {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2},ingredients:["Brown Sugar","Cinnamon Sugar"]}},
  {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,included:["Cinnamon Sugar"],fixed:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate Sauce":2}}},
@@ -215,10 +226,10 @@ const sauceNames=["White Chocolate Sauce","Caramel Sauce","Chocolate Sauce"];
 let current=null, chosenSyrups={}, chosenSauces={};
 
 function showTab(id){
- ["order","customize","favorites","mine","barista"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));
- ["Order","Fav","Mine","Barista"].forEach(x=>document.getElementById("tab"+x)?.classList.remove("active"));
+ ["order","customize","favorites","mine","barista","app"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));
+ ["Order","Fav","Mine","Barista","App"].forEach(x=>document.getElementById("tab"+x)?.classList.remove("active"));
  if(id==="order")tabOrder.classList.add("active"); if(id==="favorites"){tabFav.classList.add("active");renderFavorites()}
- if(id==="mine"){tabMine.classList.add("active");loadMyOrders()} if(id==="barista")tabBarista.classList.add("active");
+ if(id==="mine"){tabMine.classList.add("active");loadMyOrders()} if(id==="barista")tabBarista.classList.add("active"); if(id==="app")tabApp.classList.add("active");
 }
 function renderMenu(){
  menu.innerHTML="";
@@ -314,7 +325,7 @@ function saveFavorite(){
 function renderFavorites(){
  const fs=JSON.parse(localStorage.mmFavs||"[]");favList.innerHTML=fs.length?"":"<div class='card'>No favorites saved yet.</div>";
  fs.forEach((f,i)=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${f.name}</h3><div class="small">${f.drink}</div><div class="favrow"><button class="primary">Order Again</button><button class="secondary">Delete</button></div>`;
- c.children[2].children[0].onclick=()=>{const d=drinks.find(x=>x.name===f.drink);showTab("order");chooseDrink(d,f)};
+ c.children[2].children[0].onclick=()=>{const d=drinks.find(x=>x.name===f.drink);if(!d){alert("That drink is no longer on the menu.");return}showTab("order");chooseDrink(d,f)};
  c.children[2].children[1].onclick=()=>{fs.splice(i,1);localStorage.mmFavs=JSON.stringify(fs);renderFavorites()};favList.appendChild(c)});
 }
 async function loadMyOrders(){
@@ -353,5 +364,9 @@ async function setStatus(id,status){
  }
 }
 renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
+let deferredInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
+document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
 </script>
 </body></html>
