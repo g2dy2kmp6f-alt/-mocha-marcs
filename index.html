@@ -200,11 +200,11 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 </section>
 
 <section id="favorites" class="hidden"><div id="favList"></div></section>
-<section id="mine" class="hidden"><div id="myOrders"></div></section>
+<section id="mine" class="hidden"><div class="card"><h2>Order Notifications</h2><p class="small">Get a notification when Marc marks your order Ready.</p><button id="customerNotifyBtn" class="primary" onclick="enableCustomerNotifications()">🔔 Enable Ready Notifications</button><div id="customerNotifyMsg" class="small" style="margin-top:8px"></div></div><div id="myOrders"></div></section>
 
 <section id="barista" class="hidden">
 <div id="pinGate" class="card"><h2>Marc's Barista Board</h2><label>PIN</label><input id="pin" inputmode="numeric" type="password"><button class="primary" style="margin-top:10px" onclick="unlock()">Open Board</button></div>
-<div id="board" class="hidden"><div class="card"><h2>Barista Board</h2><button class="secondary" onclick="loadBoard()">Refresh</button><div id="boardOrders"></div></div></div>
+<div id="board" class="hidden"><div class="card"><h2>Barista Board</h2><div class="favrow"><button class="secondary" onclick="loadBoard()">Refresh</button><button id="baristaNotifyBtn" class="primary" onclick="enableBaristaNotifications()">🔔 Enable New Order Notifications</button></div><div id="baristaNotifyMsg" class="small" style="margin-top:8px"></div><div id="boardOrders"></div></div></div>
 </section>
 
 <section id="app" class="hidden">
@@ -221,6 +221,7 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <script>
 const SUPABASE_URL = "https://trgakqjujyvvumpbfurt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_A8qguEaqgKw6UxS7U9Bi0g_Pk5PV0Sh";
+const VAPID_PUBLIC_KEY = "BIWovFex7NpmLjMJkFBMKaGYO2ZV0UUwSRdMdixYlyYtXIvmxqHQWAMujQ4EDpBPE7tHDpJsXiytOymhp-YaX6o";
 const drinks = [
  {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false},
  {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,iced:false},
@@ -335,6 +336,27 @@ async function api(path,opt={}){
  const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...opt,headers}); if(!r.ok)throw new Error(await r.text()); return r.status===204?null:r.json();
 }
 function deviceId(){let x=localStorage.mmDevice;if(!x){x=crypto.randomUUID();localStorage.mmDevice=x}return x}
+function urlBase64ToUint8Array(base64String){
+ const padding="=".repeat((4-base64String.length%4)%4);const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+ const raw=atob(base64);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+function isStandalone(){return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true}
+async function enablePush(role,msgId){
+ const out=document.getElementById(msgId);
+ try{
+  if(!isStandalone() && /iPhone|iPad|iPod/.test(navigator.userAgent)){throw new Error("On iPhone, open Mocha Marc’s from the Home Screen app first.")}
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))throw new Error("Push notifications are not supported on this device.");
+  const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("Notifications were not allowed. You can enable them in iPhone Settings → Notifications → Mocha Marc’s.");
+  const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+  const j=sub.toJSON();
+  await api("rpc/register_push_subscription",{method:"POST",body:JSON.stringify({p_device_id:deviceId(),p_role:role,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth})});
+  localStorage.setItem(role==="barista"?"mmBaristaPush":"mmCustomerPush","1");
+  if(out)out.textContent=role==="barista"?"✓ New-order notifications are enabled on this device.":"✓ Ready notifications are enabled on this device.";
+ }catch(e){if(out)out.textContent=e.message;else alert(e.message)}
+}
+function enableBaristaNotifications(){return enablePush("barista","baristaNotifyMsg")}
+function enableCustomerNotifications(){return enablePush("customer","customerNotifyMsg")}
 async function submitOrder(){
  const name=customerName.value.trim(); if(!name){msg.innerHTML='<div class="notice">Enter your name first.</div>';return}
  if(pickupTime.value==="ASAP"&&pickupDate.value!==localDateKey(new Date())){msg.innerHTML='<div class="notice">ASAP pickup is only available for today.</div>';return}
@@ -342,7 +364,7 @@ async function submitOrder(){
  try{
   const rows=await api("orders",{method:"POST",body:JSON.stringify({customer_name:name,drink:p.drink,milk:p.milk,shots:p.shots,customizations:{...p.customizations,device_id:deviceId()},notes:p.notes,status:"New"})});
   const ids=JSON.parse(localStorage.mmOrderIds||"[]"); if(rows?.[0]?.id)ids.push(rows[0].id);localStorage.mmOrderIds=JSON.stringify(ids);
-  msg.innerHTML='<div class="notice">☕ Order sent to Marc!</div>';
+  msg.innerHTML='<div class="notice">☕ Order sent to Marc!<br><button class="primary" style="margin-top:10px" onclick="enableCustomerNotifications()">🔔 Notify Me When It’s Ready</button><div id="customerNotifyMsg" class="small" style="margin-top:8px"></div></div>';
  }catch(e){msg.innerHTML='<div class="notice">Could not send order. '+e.message+'</div>'}
 }
 function saveFavorite(){
@@ -395,7 +417,7 @@ renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
 let deferredInstallPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installBtn?.classList.remove("hidden")});
 document.getElementById("installBtn")?.addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;installBtn.classList.add("hidden")});
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=13",{updateViaCache:"none"}).catch(()=>{}))}
 </script>
 <script>
 (function(){
@@ -403,4 +425,5 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
   if(standalone){ const b=document.getElementById('appBanner'); if(b) b.classList.add('hidden'); }
 })();
 </script>
+<!-- Mocha Marcs GitHub build v13 notifications fix -->
 </body></html>
