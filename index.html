@@ -199,20 +199,19 @@ const SUPABASE_KEY = "sb_publishable_A8qguEaqgKw6UxS7U9Bi0g_Pk5PV0Sh";
 const drinks = [
  {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false},
  {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,iced:false},
- {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:false},
- {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false},
+ {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:false,included:["Cinnamon Sugar"]},
+ {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:false,included:["Cinnamon Sugar"]},
  {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false,included:["Chocolate Sauce","Whipped Cream"]},
  {name:"Iced Coffee",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:true},
- {name:"Cold Brew",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:true},
- {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true},
+ {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:true,included:["Cinnamon Sugar"]},
  {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,included:["Chocolate Sauce","Whipped Cream"]},
  {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Caramel":2},sauces:{"Caramel Sauce":2}}},
- {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{ingredients:["Brown Sugar"]}},
- {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate":2}}},
+ {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2},ingredients:["Brown Sugar","Cinnamon Sugar"]}},
+ {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,included:["Cinnamon Sugar"],fixed:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate Sauce":2}}},
  {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false,fixed:{ingredients:["Hazelnut Cream"]}}
 ];
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel"];
-const sauceNames=["White Chocolate","Caramel Sauce","Chocolate Sauce"];
+const sauceNames=["White Chocolate Sauce","Caramel Sauce","Chocolate Sauce"];
 let current=null, chosenSyrups={}, chosenSauces={};
 
 function showTab(id){
@@ -227,9 +226,9 @@ function renderMenu(){
    const h=document.createElement("h2");h.textContent=group==="regular"?"Coffee":"Marc's Specialty Drinks";menu.appendChild(h);
    drinks.filter(d=>d.type===group).forEach(d=>{
     const c=document.createElement("div");c.className="card drink";
-    const kinds={"Espresso":"espresso","Americano":"americano","Latte":"latte","Cappuccino":"cappuccino","Mocha":"mocha","Iced Coffee":"iced","Cold Brew":"coldbrew","Iced Latte":"iced","Iced Mocha":"icedmocha","Iced Caramel Macchiato":"caramel","Brown Sugar Shaken Espresso":"brown","Iced White Chocolate Cinnamon Dolce Latte":"white","Hazelnut Cream Americano":"hazelnut"};
+    const kinds={"Espresso":"espresso","Americano":"americano","Latte":"latte","Cappuccino":"cappuccino","Mocha":"mocha","Iced Coffee":"iced","Iced Latte":"iced","Iced Mocha":"icedmocha","Iced Caramel Macchiato":"caramel","Brown Sugar Shaken Espresso":"brown","Iced White Chocolate Cinnamon Dolce Latte":"white","Hazelnut Cream Americano":"hazelnut"};
     c.dataset.kind=kinds[d.name]||"latte";
-    const photos={"Espresso":"espresso.jpg","Americano":"americano.jpg","Latte":"latte.jpg","Cappuccino":"cappuccino.jpg","Mocha":"mocha.jpg","Iced Coffee":"iced-coffee.jpg","Cold Brew":"iced-coffee.jpg","Iced Latte":"iced-latte.jpg","Iced Mocha":"iced-mocha.jpg","Iced Caramel Macchiato":"iced-caramel-macchiato.jpg","Brown Sugar Shaken Espresso":"brown-sugar-shaken-espresso.jpg","Iced White Chocolate Cinnamon Dolce Latte":"iced-white-chocolate-cinnamon-dolce-latte.jpg","Hazelnut Cream Americano":"hazelnut-cream-americano.jpg"};
+    const photos={"Espresso":"espresso.jpg","Americano":"americano.jpg","Latte":"latte.jpg","Cappuccino":"cappuccino.jpg","Mocha":"mocha.jpg","Iced Coffee":"iced-coffee.jpg","Iced Latte":"iced-latte.jpg","Iced Mocha":"iced-mocha.jpg","Iced Caramel Macchiato":"iced-caramel-macchiato.jpg","Brown Sugar Shaken Espresso":"brown-sugar-shaken-espresso.jpg","Iced White Chocolate Cinnamon Dolce Latte":"iced-white-chocolate-cinnamon-dolce-latte.jpg","Hazelnut Cream Americano":"hazelnut-cream-americano.jpg"};
     c.innerHTML=`<img class="drink-photo" src="${photos[d.name]}" alt="${d.name}"><div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
     c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
    });
