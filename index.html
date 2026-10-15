@@ -200,16 +200,16 @@ const drinks = [
  {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false},
  {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,iced:false},
  {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:false},
- {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:false},
- {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false},
- {name:"Iced Coffee",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:false,iced:true},
- {name:"Cold Brew",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:true,iced:true},
+ {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false},
+ {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false,included:["Chocolate Sauce","Whipped Cream"]},
+ {name:"Iced Coffee",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:true},
+ {name:"Cold Brew",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:true},
  {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true},
- {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true},
- {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2},sauces:{"Caramel Sauce":2}}},
- {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2},ingredients:["Brown Sugar"]}},
+ {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,included:["Chocolate Sauce","Whipped Cream"]},
+ {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Caramel":2},sauces:{"Caramel Sauce":2}}},
+ {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{ingredients:["Brown Sugar"]}},
  {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate":2}}},
- {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false}
+ {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false,fixed:{ingredients:["Hazelnut Cream"]}}
 ];
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel"];
 const sauceNames=["White Chocolate","Caramel Sauce","Chocolate Sauce"];
@@ -229,7 +229,7 @@ function renderMenu(){
     const c=document.createElement("div");c.className="card drink";
     const kinds={"Espresso":"espresso","Americano":"americano","Latte":"latte","Cappuccino":"cappuccino","Mocha":"mocha","Iced Coffee":"iced","Cold Brew":"coldbrew","Iced Latte":"iced","Iced Mocha":"icedmocha","Iced Caramel Macchiato":"caramel","Brown Sugar Shaken Espresso":"brown","Iced White Chocolate Cinnamon Dolce Latte":"white","Hazelnut Cream Americano":"hazelnut"};
     c.dataset.kind=kinds[d.name]||"latte";
-    const photos={"Espresso":"espresso.jpg","Americano":"americano.jpg","Latte":"latte.jpg","Cappuccino":"cappuccino.jpg","Mocha":"mocha.jpg","Iced Coffee":"iced-coffee.jpg","Cold Brew":"iced-coffee.jpg","Iced Latte":"latte.jpg","Iced Mocha":"mocha.jpg","Iced Caramel Macchiato":"latte.jpg","Brown Sugar Shaken Espresso":"iced-coffee.jpg","Iced White Chocolate Cinnamon Dolce Latte":"latte.jpg","Hazelnut Cream Americano":"americano.jpg"};
+    const photos={"Espresso":"espresso.jpg","Americano":"americano.jpg","Latte":"latte.jpg","Cappuccino":"cappuccino.jpg","Mocha":"mocha.jpg","Iced Coffee":"iced-coffee.jpg","Cold Brew":"iced-coffee.jpg","Iced Latte":"iced-latte.jpg","Iced Mocha":"iced-mocha.jpg","Iced Caramel Macchiato":"iced-caramel-macchiato.jpg","Brown Sugar Shaken Espresso":"brown-sugar-shaken-espresso.jpg","Iced White Chocolate Cinnamon Dolce Latte":"iced-white-chocolate-cinnamon-dolce-latte.jpg","Hazelnut Cream Americano":"hazelnut-cream-americano.jpg"};
     c.innerHTML=`<img class="drink-photo" src="${photos[d.name]}" alt="${d.name}"><div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
     c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
    });
@@ -253,11 +253,12 @@ function chips(el,names,target){
 function fixedIncluded(d){
  const rows=[];
  if(d.milk) rows.push(["Milk",milk.value||"2% Milk"]);
- if(d.shots) rows.push(["Espresso",`${shots.value||d.shots[0]} shot${Number(shots.value||d.shots[0])===1?"":"s"}`]);
+ if(d.shots) rows.push(["Espresso",`${shots.value||2} shot${Number(shots.value||2)===1?"":"s"}`]);
  const fx=d.fixed||{};
  Object.entries(fx.syrups||{}).forEach(([n,p])=>rows.push(["Flavor",`${n} · ${p} pump${p===1?"":"s"}`]));
  Object.entries(fx.sauces||{}).forEach(([n,p])=>rows.push(["Flavor",`${n} · ${p} pump${p===1?"":"s"}`]));
  (fx.ingredients||[]).forEach(n=>rows.push(["Included",n]));
+ (d.included||[]).forEach(n=>rows.push(["Included",n]));
  if(d.iced) rows.push(["Included","Cold Foam"]);
  return rows;
 }
@@ -272,7 +273,7 @@ function chooseDrink(d,preset=null){
  chosenSauces=d.fixed?normalizePumps(d.fixed.sauces):normalizePumps(base.customizations?.sauces||base.sauces);
  drinkTitle.textContent=d.name;
  shotWrap.classList.toggle("hidden",!d.shots); shots.innerHTML=(d.shots||[]).map(x=>`<option value="${x}">${x} shot${x===1?"":"s"}</option>`).join("");
- if(base?.shots!=null) shots.value=base.shots; shotCount.textContent=shots.value||d.shots?.[0]||0;
+ shots.value=(base?.shots!=null?base.shots:2); shotCount.textContent=shots.value||2;
  milkWrap.classList.toggle("hidden",!d.milk); if(base?.milk)milk.value=base.milk; milk.onchange=renderIncluded; iceWrap.classList.toggle("hidden",!d.iced); ice.value=base?.customizations?.ice||base?.ice||"Ice";
  const allowedFlavors=[...(d.syrups?syrupNames:[]),...(d.sauces?sauceNames:[])];
  flavorWrap.classList.toggle("hidden",allowedFlavors.length===0);
@@ -290,7 +291,7 @@ function backToMenu(){customize.classList.add("hidden");order.classList.remove("
 function orderPayload(){
  const fixedS=d=>d.fixed||{}; const fx=fixedS(current);
  return {drink:current.name,milk:current.milk?milk.value:null,shots:current.shots?Number(shots.value):null,
- customizations:{syrups:fx.syrups|| (current.syrups?chosenSyrups:{}),sauces:fx.sauces|| (current.sauces?chosenSauces:{}),ingredients:fx.ingredients||[],cold_foam:!!current.iced,ice:current.iced?ice.value:null},
+ customizations:{syrups:fx.syrups|| (current.syrups?chosenSyrups:{}),sauces:fx.sauces|| (current.sauces?chosenSauces:{}),ingredients:[...(fx.ingredients||[]),...(current.included||[])],cold_foam:!!current.iced,ice:current.iced?ice.value:null},
  notes:notes.value.trim()};
 }
 async function api(path,opt={}){
