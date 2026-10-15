@@ -8,15 +8,19 @@
 <style>
 :root{--bg:#f7efe4;--card:#fffaf3;--ink:#342219;--muted:#806b5d;--accent:#8a552f;--line:#e6d7c8;--ok:#2e6a45}
 *{box-sizing:border-box}body{margin:0;font-family:ui-rounded,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-header{padding:18px 16px 8px;text-align:center}header img{width:150px;height:150px;object-fit:contain;border-radius:50%}
-main{max-width:760px;margin:auto;padding:8px 14px 90px}.tabs{display:flex;gap:8px;position:sticky;top:0;background:rgba(247,239,228,.95);padding:10px 0;z-index:2}
-button,.btn,select,input,textarea{font:inherit}.tabs button,.primary,.secondary{border:0;border-radius:14px;padding:12px 14px;font-weight:700}.tabs button{flex:1;background:#eadbcb;color:var(--ink)}.tabs button.active,.primary{background:var(--accent);color:white}.secondary{background:#eadbcb;color:var(--ink)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 18px #4a2d1710}.drink{display:flex;justify-content:space-between;align-items:center;gap:12px}.drink h3{margin:0 0 4px}.small{font-size:.9rem;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+header{padding:12px 16px 2px;text-align:center}header img{width:112px;height:112px;object-fit:contain;border-radius:50%}
+main{max-width:760px;margin:auto;padding:4px 14px 90px}.tabs{display:flex;gap:6px;background:var(--bg);padding:8px 0 10px;z-index:2}
+button,.btn,select,input,textarea{font:inherit}.tabs button,.primary,.secondary{border:0;border-radius:12px;padding:10px 12px;font-weight:700}.tabs button{flex:1;background:#eadbcb;color:var(--ink);font-size:.9rem}.tabs button.active,.primary{background:var(--accent);color:white}.secondary{background:#eadbcb;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:9px 0;box-shadow:0 3px 14px #4a2d1710}.drink{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px}.drink h3{margin:0 0 2px;font-size:1.05rem}.drink .primary{padding:9px 12px;white-space:nowrap}.small{font-size:.86rem;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#menu>h2{font-size:1.25rem;margin:18px 2px 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+#menu>h2:first-child{margin-top:10px}
+#menu>h2:nth-of-type(2){color:var(--accent)}
+.pumpchip{min-width:120px;text-align:center}.order-details{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);line-height:1.55}.order-details b{color:var(--ink)}
 label{display:block;font-weight:700;margin:12px 0 6px}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:white;padding:12px;color:var(--ink)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px}.chip.on{background:#eadbcb;border-color:#b98c66}
 .hidden{display:none!important}.status{font-weight:800}.New{color:#8a552f}.Making{color:#a56b00}.Ready{color:var(--ok)}.Done{color:var(--muted)}
 .notice{background:#fff3cd;border:1px solid #ead58b;padding:12px;border-radius:12px;margin:10px 0}.favrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-@media(max-width:520px){.grid{grid-template-columns:1fr}header img{width:130px;height:130px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}header img{width:104px;height:104px}.tabs button{padding:9px 6px;font-size:.78rem}.card{margin:7px 0}.drink{padding:11px 12px}}
 </style>
 </head>
 <body>
@@ -81,7 +85,7 @@ const drinks = [
 ];
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel","Brown Sugar"];
 const sauceNames=["White Chocolate","Caramel Sauce"];
-let current=null, chosenSyrups=[], chosenSauces=[];
+let current=null, chosenSyrups={}, chosenSauces={};
 
 function showTab(id){
  ["order","customize","favorites","mine","barista"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));
@@ -100,23 +104,36 @@ function renderMenu(){
    });
  }
 }
-function chips(el,names,target){el.innerHTML="";names.forEach(n=>{let b=document.createElement("button");b.className="chip";b.textContent=n;b.onclick=()=>{let i=target.indexOf(n);if(i>=0)target.splice(i,1);else target.push(n);b.classList.toggle("on")};el.appendChild(b)})}
+function normalizePumps(v){
+ const out={}; if(Array.isArray(v)) v.forEach(x=>{if(typeof x==="string")out[x]=1;else if(x?.name)out[x.name]=Number(x.pumps)||1});
+ else if(v&&typeof v==="object") Object.entries(v).forEach(([k,n])=>{if(Number(n)>0)out[k]=Number(n)});
+ return out;
+}
+function pumpLabel(name,n){return n?`${name} · ${n} pump${n===1?"":"s"}`:name}
+function chips(el,names,target){
+ el.innerHTML="";
+ names.forEach(n=>{
+   let b=document.createElement("button"); b.type="button"; b.className="chip pumpchip";
+   const draw=()=>{const pumps=Number(target[n]||0);b.textContent=pumpLabel(n,pumps);b.classList.toggle("on",pumps>0)};
+   b.onclick=()=>{const next=(Number(target[n]||0)+1)%4;if(next)target[n]=next;else delete target[n];draw()};
+   draw();el.appendChild(b);
+ })
+}
 function chooseDrink(d,preset=null){
- current=d;chosenSyrups=[...(preset?.syrups||[])];chosenSauces=[...(preset?.sauces||[])];
+ current=d;chosenSyrups=normalizePumps(preset?.syrups);chosenSauces=normalizePumps(preset?.sauces);
  drinkTitle.textContent=d.name; specialtyNote.classList.toggle("hidden",d.type!=="specialty");
  shotWrap.classList.toggle("hidden",!d.shots); shots.innerHTML=(d.shots||[]).map(x=>`<option value="${x}">${x} shot${x===1?"":"s"}</option>`).join("");
  if(preset?.shots!=null) shots.value=preset.shots;
  milkWrap.classList.toggle("hidden",!d.milk); if(preset?.milk)milk.value=preset.milk;
  syrupWrap.classList.toggle("hidden",!d.syrups); sauceWrap.classList.toggle("hidden",!d.sauces); foamWrap.classList.toggle("hidden",!d.foam);
  foam.checked=!!preset?.foam; notes.value=preset?.notes||""; chips(syrups,syrupNames,chosenSyrups);chips(sauces,sauceNames,chosenSauces);
- document.querySelectorAll("#syrups .chip").forEach(b=>b.classList.toggle("on",chosenSyrups.includes(b.textContent)));
- document.querySelectorAll("#sauces .chip").forEach(b=>b.classList.toggle("on",chosenSauces.includes(b.textContent)));
+
  order.classList.add("hidden");customize.classList.remove("hidden");
 }
 function backToMenu(){customize.classList.add("hidden");order.classList.remove("hidden")}
 function orderPayload(){
  return {drink:current.name,milk:current.milk?milk.value:null,shots:current.shots?Number(shots.value):null,
- customizations:{syrups:current.syrups?chosenSyrups:[],sauces:current.sauces?chosenSauces:[],cold_foam:current.foam?foam.checked:false},
+ customizations:{syrups:current.syrups?chosenSyrups:{},sauces:current.sauces?chosenSauces:{},cold_foam:current.foam?foam.checked:false},
  notes:notes.value.trim()};
 }
 async function api(path,opt={}){
@@ -150,10 +167,21 @@ async function loadMyOrders(){
  catch(e){myOrders.innerHTML="<div class='notice'>Could not load orders.</div>"}
 }
 function unlock(){if(pin.value==="1973"){pinGate.classList.add("hidden");board.classList.remove("hidden");loadBoard()}else alert("Incorrect PIN")}
+function formatPumps(value){
+ const p=normalizePumps(value); return Object.entries(p).map(([name,n])=>`${name} — ${n} pump${n===1?"":"s"}`).join("<br>");
+}
+function baristaDetails(r){
+ const c=r.customizations||{}; const parts=[];
+ const syr=formatPumps(c.syrups); const sau=formatPumps(c.sauces);
+ if(syr)parts.push(`<div><b>Syrups:</b><br>${syr}</div>`);
+ if(sau)parts.push(`<div><b>Sauces:</b><br>${sau}</div>`);
+ if(c.cold_foam)parts.push(`<div><b>Cold Foam</b></div>`);
+ return parts.length?`<div class="order-details">${parts.join("")}</div>`:"";
+}
 async function loadBoard(){
  try{const rows=await api("orders?select=id,created_at,customer_name,drink,milk,shots,customizations,notes,status&status=neq.Done&order=created_at.asc");
  boardOrders.innerHTML=rows.length?"":"<p>No active orders.</p>";
- rows.forEach(r=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${r.customer_name} — ${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${r.milk||""} ${r.shots!=null?(" • "+r.shots+" shots"):""}</div>${r.notes?`<p>${r.notes}</p>`:""}<div class="favrow"></div>`;
+ rows.forEach(r=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${r.customer_name} — ${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${r.milk||""} ${r.shots!=null?(" • "+r.shots+" shots"):""}</div>${baristaDetails(r)}${r.notes?`<p><b>Note:</b> ${r.notes}</p>`:""}<div class="favrow"></div>`;
  ["New","Making","Ready","Done"].forEach(s=>{let b=document.createElement("button");b.className="secondary";b.textContent=s;b.onclick=()=>setStatus(r.id,s);c.lastElementChild.appendChild(b)});boardOrders.appendChild(c)});
  }catch(e){boardOrders.innerHTML="<div class='notice'>Board is read-only until secure Marc update permissions are enabled in Supabase.</div>"}
 }
