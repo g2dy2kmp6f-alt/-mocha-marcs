@@ -150,10 +150,10 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 .stepper strong{min-width:26px;text-align:center;font-size:1.1rem}
 .customize-heading{margin-top:22px;border-top:2px solid #d7b383;padding-top:18px}
 
-.app-banner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;margin:0 0 16px;padding:15px 16px;border-radius:18px;background:linear-gradient(135deg,#6f2f12,#a85a27);color:#fff;box-shadow:0 12px 24px rgba(75,30,9,.22);cursor:pointer;border:2px solid #e3ae64;animation:appPulse 2.8s ease-in-out infinite}
-.app-banner-icon{font-size:1.8rem}.app-banner-copy{display:flex;flex-direction:column;line-height:1.15}.app-banner-copy strong{font-size:1.03rem}.app-banner-copy span{font-size:.76rem;opacity:.9;margin-top:4px}.app-banner-cta{font-size:.76rem;font-weight:900;background:#fff4df;color:#6f2f12;padding:9px 10px;border-radius:11px;white-space:nowrap}
-@keyframes appPulse{0%,100%{transform:translateY(0);box-shadow:0 12px 24px rgba(75,30,9,.20)}50%{transform:translateY(-2px);box-shadow:0 15px 30px rgba(75,30,9,.30)}}
-@media(max-width:520px){.app-banner{grid-template-columns:auto 1fr;padding:13px 14px}.app-banner-cta{grid-column:1/-1;text-align:center;padding:8px}.app-banner-copy strong{font-size:1rem}}
+.app-banner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;margin:14px 0 22px;padding:18px 18px;border-radius:20px;background:linear-gradient(135deg,#8d350d,#c96516);color:#fff;box-shadow:0 14px 30px rgba(89,34,7,.34),0 0 0 4px #f4c96f;cursor:pointer;border:3px solid #fff0bd;animation:appPulse 2.2s ease-in-out infinite}
+.app-banner-icon{font-size:2.2rem}.app-banner-copy{display:flex;flex-direction:column;line-height:1.12}.app-banner-copy strong{font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}.app-banner-copy span{font-size:.88rem;font-weight:700;opacity:1;margin-top:6px}.app-banner-cta{font-size:.9rem;font-weight:1000;background:#ffd05c;color:#5a2109;padding:12px 14px;border-radius:13px;white-space:nowrap;box-shadow:0 4px 10px rgba(70,24,4,.22)}
+@keyframes appPulse{0%,100%{transform:scale(1);box-shadow:0 14px 30px rgba(89,34,7,.30),0 0 0 4px #f4c96f}50%{transform:scale(1.015);box-shadow:0 18px 36px rgba(89,34,7,.42),0 0 0 5px #ffd878}}
+@media(max-width:520px){.app-banner{grid-template-columns:auto 1fr;padding:16px 15px}.app-banner-cta{grid-column:1/-1;text-align:center;padding:11px;font-size:1rem}.app-banner-copy strong{font-size:1.08rem}.app-banner-copy span{font-size:.82rem}}
 </style>
 </head>
 <body>
@@ -167,8 +167,8 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 </div>
 <div id="appBanner" class="app-banner" onclick="showTab('app')" role="button" tabindex="0" aria-label="Get the Mocha Marc’s App">
   <div class="app-banner-icon">📱</div>
-  <div class="app-banner-copy"><strong>Get the Mocha Marc’s App</strong><span>Add to your Home Screen for one-tap ordering</span></div>
-  <div class="app-banner-cta">GET APP →</div>
+  <div class="app-banner-copy"><strong>📲 Get the Mocha Marc’s App</strong><span>One tap from your Home Screen — install it now</span></div>
+  <div class="app-banner-cta">GET THE APP →</div>
 </div>
 
 <section id="order">
@@ -188,6 +188,11 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <div id="milkWrap" class="control-row"><label>Milk</label><select id="milk"><option>2% Milk</option><option>Oat Milk</option></select></div>
 <div id="iceWrap" class="control-row hidden"><label>Ice</label><select id="ice"><option>Ice</option><option>Light Ice</option><option>Extra Ice</option><option>No Ice</option></select></div>
 <div id="flavorWrap" class="control-row"><label>Flavors</label><div id="flavors" class="chips"></div></div>
+<div class="included" style="margin-top:18px"><h3>Pickup</h3>
+<div class="control-row"><label>Pickup date</label><select id="pickupDate"></select></div>
+<div class="control-row"><label>Pickup time</label><select id="pickupTime"></select></div>
+<div class="small">Choose ASAP for pickup as soon as possible today, or select a scheduled time.</div>
+</div>
 <label>Special instructions</label><textarea id="notes" rows="3" placeholder="Optional"></textarea>
 <div class="favrow"><button class="primary" onclick="submitOrder()">Send Order to Marc</button><button class="secondary" onclick="saveFavorite()">♡ Save Favorite</button></div>
 <div id="msg"></div>
@@ -303,14 +308,26 @@ function chooseDrink(d,preset=null){
    const draw=()=>{const pumps=Number(target[n]||0);b.textContent=pumpLabel(n,pumps);b.classList.toggle("on",pumps>0)};
    b.onclick=()=>{const next=(Number(target[n]||0)+1)%4;if(next)target[n]=next;else delete target[n];draw()}; draw(); flavors.appendChild(b);
  });
- notes.value=base?.notes||""; renderIncluded();
+ notes.value=base?.notes||""; initPickup(); if(base?.customizations?.pickup_date)pickupDate.value=base.customizations.pickup_date; if(base?.customizations?.pickup_time)pickupTime.value=base.customizations.pickup_time; renderIncluded();
  order.classList.add("hidden");customize.classList.remove("hidden");
 }
 function backToMenu(){customize.classList.add("hidden");order.classList.remove("hidden")}
+function localDateKey(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
+function initPickup(){
+ pickupDate.innerHTML="";
+ const now=new Date();
+ for(let i=0;i<14;i++){const d=new Date(now);d.setDate(now.getDate()+i);const o=document.createElement("option");o.value=localDateKey(d);o.textContent=d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})+(i===0?" (Today)":"");pickupDate.appendChild(o)}
+ pickupTime.innerHTML='<option value="ASAP">ASAP</option>';
+ for(let h=6;h<=20;h++)for(const m of [0,15,30,45]){if(h===20&&m>0)continue;const d=new Date(2000,0,1,h,m);const label=d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});const o=document.createElement("option");o.value=label;o.textContent=label;pickupTime.appendChild(o)}
+ pickupDate.onchange=()=>{if(pickupDate.value!==localDateKey(new Date())&&pickupTime.value==="ASAP")pickupTime.selectedIndex=1};
+ pickupTime.onchange=()=>{if(pickupTime.value==="ASAP")pickupDate.value=localDateKey(new Date())};
+}
+function pickupLabel(c){if(!c?.pickup_date)return "";const [y,m,d]=c.pickup_date.split("-").map(Number);const dt=new Date(y,m-1,d);return `${dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})} • ${c.pickup_time||""}`}
+
 function orderPayload(){
  const fixedS=d=>d.fixed||{}; const fx=fixedS(current);
  return {drink:current.name,milk:current.milk?milk.value:null,shots:current.shots?Number(shots.value):null,
- customizations:{syrups:fx.syrups|| (current.syrups?chosenSyrups:{}),sauces:fx.sauces|| (current.sauces?chosenSauces:{}),ingredients:[...(fx.ingredients||[]),...(current.included||[])],cold_foam:!!current.iced,ice:current.iced?ice.value:null},
+ customizations:{syrups:fx.syrups|| (current.syrups?chosenSyrups:{}),sauces:fx.sauces|| (current.sauces?chosenSauces:{}),ingredients:[...(fx.ingredients||[]),...(current.included||[])],cold_foam:!!current.iced,ice:current.iced?ice.value:null,pickup_date:pickupDate.value,pickup_time:pickupTime.value},
  notes:notes.value.trim()};
 }
 async function api(path,opt={}){
@@ -320,6 +337,7 @@ async function api(path,opt={}){
 function deviceId(){let x=localStorage.mmDevice;if(!x){x=crypto.randomUUID();localStorage.mmDevice=x}return x}
 async function submitOrder(){
  const name=customerName.value.trim(); if(!name){msg.innerHTML='<div class="notice">Enter your name first.</div>';return}
+ if(pickupTime.value==="ASAP"&&pickupDate.value!==localDateKey(new Date())){msg.innerHTML='<div class="notice">ASAP pickup is only available for today.</div>';return}
  localStorage.mmName=name; const p=orderPayload();
  try{
   const rows=await api("orders",{method:"POST",body:JSON.stringify({customer_name:name,drink:p.drink,milk:p.milk,shots:p.shots,customizations:{...p.customizations,device_id:deviceId()},notes:p.notes,status:"New"})});
@@ -339,8 +357,8 @@ function renderFavorites(){
 }
 async function loadMyOrders(){
  const ids=JSON.parse(localStorage.mmOrderIds||"[]"); if(!ids.length){myOrders.innerHTML="<div class='card'>No orders from this device yet.</div>";return}
- try{const rows=await api(`orders?select=id,created_at,drink,status,milk,shots,notes&order=created_at.desc&id=in.(${ids.join(",")})`);
- myOrders.innerHTML=rows.map(r=>`<div class="card"><h3>${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${new Date(r.created_at).toLocaleString()}</div></div>`).join("")}
+ try{const rows=await api(`orders?select=id,created_at,drink,status,milk,shots,notes,customizations&order=created_at.desc&id=in.(${ids.join(",")})`);
+ myOrders.innerHTML=rows.map(r=>`<div class="card"><h3>${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small"><b>Pickup:</b> ${pickupLabel(r.customizations)||"Not specified"}</div><div class="small">Ordered ${new Date(r.created_at).toLocaleString()}</div></div>`).join("")}
  catch(e){myOrders.innerHTML="<div class='notice'>Could not load orders.</div>"}
 }
 function unlock(){if(pin.value==="1973"){pinGate.classList.add("hidden");board.classList.remove("hidden");loadBoard()}else alert("Incorrect PIN")}
@@ -355,6 +373,7 @@ function baristaDetails(r){
  if(c.ingredients?.length)parts.push(`<div><b>Included:</b><br>${c.ingredients.join("<br>")}</div>`);
  if(c.cold_foam)parts.push(`<div><b>Cold Foam</b></div>`);
  if(c.ice)parts.push(`<div><b>Ice:</b> ${c.ice}</div>`);
+ if(c.pickup_date)parts.unshift(`<div><b>Pickup:</b> ${pickupLabel(c)}</div>`);
  return parts.length?`<div class="order-details">${parts.join("")}</div>`:"";
 }
 async function loadBoard(){
