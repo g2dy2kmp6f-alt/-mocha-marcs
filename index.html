@@ -133,6 +133,19 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
  #menu .drink{min-height:168px!important}
  #menu .drink h3{font-size:1rem!important}
 }
+
+/* Café drink icons — CSS-drawn, no emoji/cartoon symbols */
+#menu .drink{padding-top:16px!important}
+#menu .drink:before{display:none!important}
+.drink-icon{position:relative;width:76px;height:78px;margin:2px auto 12px;flex:0 0 auto}
+.hot-icon:before{content:"";position:absolute;left:13px;top:22px;width:46px;height:35px;border:4px solid #6f351b;border-top:0;border-radius:4px 4px 16px 16px;background:linear-gradient(180deg,#f7dfbb,#c98245)}
+.hot-icon:after{content:"";position:absolute;right:3px;top:30px;width:18px;height:20px;border:4px solid #6f351b;border-left:0;border-radius:0 14px 14px 0}
+.hot-icon span:before,.hot-icon span:after{content:"";position:absolute;top:2px;width:3px;height:17px;border-radius:4px;background:#9a6848;opacity:.75}
+.hot-icon span:before{left:29px;transform:rotate(-7deg)}.hot-icon span:after{left:44px;transform:rotate(7deg)}
+.iced-icon:before{content:"";position:absolute;left:18px;top:10px;width:40px;height:58px;border:4px solid #6f351b;border-radius:6px 6px 13px 13px;background:linear-gradient(180deg,#f4d7a7 0 24%,#b96832 25% 72%,#6e3017 73%)}
+.iced-icon:after{content:"";position:absolute;left:13px;top:5px;width:50px;height:5px;border-radius:5px;background:#6f351b;box-shadow:30px -10px 0 -1px #6f351b;transform:rotate(0deg)}
+.iced-icon span{position:absolute;z-index:2;left:27px;top:27px;width:9px;height:9px;border:2px solid rgba(255,255,255,.75);transform:rotate(18deg);box-shadow:15px 9px 0 -2px rgba(255,255,255,.72),4px 21px 0 -2px rgba(255,255,255,.62)}
+@media(max-width:520px){.drink-icon{width:68px;height:70px;margin-bottom:9px}.hot-icon:before{left:10px}.iced-icon:before{left:14px}.iced-icon:after{left:9px}}
 </style>
 </head>
 <body>
@@ -158,9 +171,7 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 <h2 id="drinkTitle"></h2><p id="specialtyNote" class="small hidden">Marc's specialty recipe. Recipe details are kept private.</p>
 <div id="shotWrap"><label>Espresso shots</label><select id="shots"></select></div>
 <div id="milkWrap"><label>Milk</label><select id="milk"><option>2% Milk</option><option>Oat Milk</option></select></div>
-<div id="syrupWrap"><label>Syrups</label><div id="syrups" class="chips"></div></div>
-<div id="sauceWrap"><label>Sauces</label><div id="sauces" class="chips"></div></div>
-<div id="foamWrap"><label><input type="checkbox" id="foam" style="width:auto"> Add Cold Foam</label></div>
+<div id="flavorWrap"><label>Flavors</label><div id="flavors" class="chips"></div></div>
 <label>Special instructions</label><textarea id="notes" rows="3" placeholder="Optional"></textarea>
 <div class="favrow"><button class="primary" onclick="submitOrder()">Send Order to Marc</button><button class="secondary" onclick="saveFavorite()">♡ Save Favorite</button></div>
 <div id="msg"></div>
@@ -180,22 +191,22 @@ background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
 const SUPABASE_URL = "https://trgakqjujyvvumpbfurt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_A8qguEaqgKw6UxS7U9Bi0g_Pk5PV0Sh";
 const drinks = [
- {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false},
- {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,foam:false},
- {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:false},
- {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:false},
- {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:false},
- {name:"Iced Coffee",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:false,foam:true},
- {name:"Cold Brew",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:true,foam:true},
- {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
- {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
- {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true,preset:{recipe:"Vanilla + Caramel Sauce"}},
- {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true,preset:{recipe:"Vanilla + Brown Sugar"}},
- {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:true,preset:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate":2}}},
- {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false}
+ {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false},
+ {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,iced:false},
+ {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,iced:false},
+ {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:false},
+ {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,iced:false},
+ {name:"Iced Coffee",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:false,iced:true},
+ {name:"Cold Brew",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:true,iced:true},
+ {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true},
+ {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true},
+ {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2},sauces:{"Caramel Sauce":2}}},
+ {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Vanilla":2,"Brown Sugar":2}}},
+ {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,iced:true,fixed:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate":2}}},
+ {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,iced:false}
 ];
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel","Brown Sugar"];
-const sauceNames=["White Chocolate","Caramel Sauce"];
+const sauceNames=["White Chocolate","Caramel Sauce","Chocolate Sauce"];
 let current=null, chosenSyrups={}, chosenSauces={};
 
 function showTab(id){
@@ -212,7 +223,8 @@ function renderMenu(){
     const c=document.createElement("div");c.className="card drink";
     const kinds={"Espresso":"espresso","Americano":"americano","Latte":"latte","Cappuccino":"cappuccino","Mocha":"mocha","Iced Coffee":"iced","Cold Brew":"coldbrew","Iced Latte":"iced","Iced Mocha":"icedmocha","Iced Caramel Macchiato":"caramel","Brown Sugar Shaken Espresso":"brown","Iced White Chocolate Cinnamon Dolce Latte":"white","Hazelnut Cream Americano":"hazelnut"};
     c.dataset.kind=kinds[d.name]||"latte";
-    c.innerHTML=`<div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
+    const icedIcon=d.iced||d.name==="Iced Coffee"||d.name==="Cold Brew";
+    c.innerHTML=`<div class="drink-icon ${icedIcon?"iced-icon":"hot-icon"}" aria-hidden="true"><span></span></div><div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
     c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
    });
  }
@@ -233,20 +245,31 @@ function chips(el,names,target){
  })
 }
 function chooseDrink(d,preset=null){
- current=d;const base=preset||d.preset||{};chosenSyrups=normalizePumps(base.syrups);chosenSauces=normalizePumps(base.sauces);
+ current=d; const base=preset||{};
+ // Fixed house recipes always win over saved favorite flavor data.
+ chosenSyrups=d.fixed?normalizePumps(d.fixed.syrups):normalizePumps(base.customizations?.syrups||base.syrups);
+ chosenSauces=d.fixed?normalizePumps(d.fixed.sauces):normalizePumps(base.customizations?.sauces||base.sauces);
  drinkTitle.textContent=d.name; specialtyNote.classList.toggle("hidden",d.type!=="specialty");
  shotWrap.classList.toggle("hidden",!d.shots); shots.innerHTML=(d.shots||[]).map(x=>`<option value="${x}">${x} shot${x===1?"":"s"}</option>`).join("");
  if(base?.shots!=null) shots.value=base.shots;
  milkWrap.classList.toggle("hidden",!d.milk); if(base?.milk)milk.value=base.milk;
- syrupWrap.classList.toggle("hidden",!d.syrups); sauceWrap.classList.toggle("hidden",!d.sauces); foamWrap.classList.toggle("hidden",!d.foam);
- foam.checked=!!base?.foam; notes.value=base?.notes||""; chips(syrups,syrupNames,chosenSyrups);chips(sauces,sauceNames,chosenSauces);
-
+ const allowedFlavors=[...(d.syrups?syrupNames:[]),...(d.sauces?sauceNames:[])];
+ flavorWrap.classList.toggle("hidden",allowedFlavors.length===0);
+ flavors.innerHTML="";
+ allowedFlavors.forEach(n=>{
+   const target=syrupNames.includes(n)?chosenSyrups:chosenSauces;
+   let b=document.createElement("button"); b.type="button"; b.className="chip pumpchip";
+   const draw=()=>{const pumps=Number(target[n]||0);b.textContent=pumpLabel(n,pumps);b.classList.toggle("on",pumps>0)};
+   b.onclick=()=>{const next=(Number(target[n]||0)+1)%4;if(next)target[n]=next;else delete target[n];draw()}; draw(); flavors.appendChild(b);
+ });
+ notes.value=base?.notes||"";
  order.classList.add("hidden");customize.classList.remove("hidden");
 }
 function backToMenu(){customize.classList.add("hidden");order.classList.remove("hidden")}
 function orderPayload(){
+ const fixedS=d=>d.fixed||{}; const fx=fixedS(current);
  return {drink:current.name,milk:current.milk?milk.value:null,shots:current.shots?Number(shots.value):null,
- customizations:{syrups:current.syrups?chosenSyrups:{},sauces:current.sauces?chosenSauces:{},cold_foam:current.foam?foam.checked:false},
+ customizations:{syrups:fx.syrups|| (current.syrups?chosenSyrups:{}),sauces:fx.sauces|| (current.sauces?chosenSauces:{}),cold_foam:!!current.iced},
  notes:notes.value.trim()};
 }
 async function api(path,opt={}){
@@ -286,8 +309,8 @@ function formatPumps(value){
 function baristaDetails(r){
  const c=r.customizations||{}; const parts=[];
  const syr=formatPumps(c.syrups); const sau=formatPumps(c.sauces);
- if(syr)parts.push(`<div><b>Syrups:</b><br>${syr}</div>`);
- if(sau)parts.push(`<div><b>Sauces:</b><br>${sau}</div>`);
+ const flavorLines=[syr,sau].filter(Boolean).join("<br>");
+ if(flavorLines)parts.push(`<div><b>Flavors:</b><br>${flavorLines}</div>`);
  if(c.cold_foam)parts.push(`<div><b>Cold Foam</b></div>`);
  return parts.length?`<div class="order-details">${parts.join("")}</div>`:"";
 }
