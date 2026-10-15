@@ -1,10 +1,12 @@
-Mocha Marc's updated files
-- Uses the existing exact logo.png unchanged.
-- Larger logo and richer espresso/caramel/gold/cream styling.
-- Larger two-column mobile menu cards.
-- Distinct visual treatment for every drink type.
-- No invented drinks, sizes, prices, milks, syrups or sauces.
-- Existing drink rules retained.
-- Barista status buttons use the now-working Supabase update path.
+Mocha Marc's — clean GitHub update
 
-For the cleaner free URL, rename the GitHub repository from -mocha-marcs to mocha-marcs.
+Changes in this version:
+- Exact existing logo.png retained and displayed much larger.
+- Removed all emoji/cartoon drink symbols.
+- Cleaner premium café cards with espresso/caramel/gold accents.
+- Renamed Hazelnut Cream to Hazelnut Cream Americano.
+- Existing menu/customization rules retained.
+- Barista New / Making / Ready / Done code retained unchanged.
+- No sizes, prices, or invented menu items.
+
+Upload these replacement files to the GitHub repository and commit to main.

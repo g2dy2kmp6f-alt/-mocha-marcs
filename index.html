@@ -110,6 +110,29 @@ nav{background:#fff9ef;border:1px solid #c8945b;box-shadow:0 10px 24px rgba(62,2
 .status.New{background:#f4d7a6;color:#6f3c10}.status.Making{background:#d8a45f;color:#442006}.status.Ready{background:#b8d7ad;color:#24451d}.status.Done{background:#d4d0ca;color:#49433d}
 #boardOrders>.card{border-top:0!important;border-left:6px solid #c77b35;background:#fffaf1}
 @media(max-width:520px){header{padding-top:16px}.logo{width:172px!important;height:172px!important}#menu{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#menu .drink{min-height:205px}#menu .drink:before{height:118px!important;font-size:58px!important}#menu .drink h3{font-size:.92rem}}
+
+/* CLEAN CAFÉ PASS: no emoji/cartoon drink symbols */
+header{min-height:300px!important;padding:20px 12px 18px!important;display:flex!important;align-items:center!important;justify-content:center!important;
+background:radial-gradient(circle at 50% 42%,#a95b2c 0,#713015 42%,#3b170b 76%)!important}
+header img{width:260px!important;height:260px!important;max-width:78vw!important;object-fit:contain!important;
+filter:drop-shadow(0 14px 20px rgba(20,7,2,.42))!important}
+#menu .drink{min-height:176px!important;padding:22px 0 12px!important;justify-content:flex-end!important;
+background:linear-gradient(155deg,#fffdf7 0,#f7e7cf 100%)!important;position:relative!important}
+#menu .drink:before{content:""!important;display:block!important;position:absolute!important;inset:0 0 auto 0!important;
+width:100%!important;height:8px!important;margin:0!important;border-radius:0!important;background:linear-gradient(90deg,#6c2c12,#c67a32,#e4ae5c)!important;
+font-size:0!important;box-shadow:none!important}
+#menu .drink>div{min-height:70px!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important}
+#menu .drink h3{font-size:1.08rem!important;line-height:1.12!important}
+#menu .drink .small{font-size:.76rem!important}
+#menu .drink .primary{margin-top:14px!important}
+#menu .drink[data-kind="caramel"],#menu .drink[data-kind="brown"],#menu .drink[data-kind="white"],#menu .drink[data-kind="hazelnut"]{
+background:linear-gradient(150deg,#fffaf0,#efd0a5)!important}
+@media(max-width:520px){
+ header{min-height:270px!important}
+ header img{width:235px!important;height:235px!important;max-width:76vw!important}
+ #menu .drink{min-height:168px!important}
+ #menu .drink h3{font-size:1rem!important}
+}
 </style>
 </head>
 <body>
@@ -169,7 +192,7 @@ const drinks = [
  {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true,preset:{recipe:"Vanilla + Caramel Sauce"}},
  {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true,preset:{recipe:"Vanilla + Brown Sugar"}},
  {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:true,preset:{syrups:{"Cinnamon Dolce":2},sauces:{"White Chocolate":2}}},
- {name:"Hazelnut Cream",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false}
+ {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false}
 ];
 const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel","Brown Sugar"];
 const sauceNames=["White Chocolate","Caramel Sauce"];
@@ -187,8 +210,8 @@ function renderMenu(){
    const h=document.createElement("h2");h.textContent=group==="regular"?"Coffee":"Marc's Specialty Drinks";menu.appendChild(h);
    drinks.filter(d=>d.type===group).forEach(d=>{
     const c=document.createElement("div");c.className="card drink";
-    const kinds={"Espresso":["espresso","☕"],"Americano":["americano","♨️"],"Latte":["latte","🥛"],"Cappuccino":["cappuccino","☁️"],"Mocha":["mocha","🍫"],"Iced Coffee":["iced","🧊"],"Cold Brew":["coldbrew","🧋"],"Iced Latte":["iced","🥤"],"Iced Mocha":["icedmocha","🍫"],"Iced Caramel Macchiato":["caramel","🍮"],"Brown Sugar Shaken Espresso":["brown","🧋"],"Iced White Chocolate Cinnamon Dolce Latte":["white","🤍"],"Hazelnut Cream":["hazelnut","🌰"]};
-    const visual=kinds[d.name]||["latte","☕"]; c.dataset.kind=visual[0]; c.dataset.symbol=visual[1];
+    const kinds={"Espresso":"espresso","Americano":"americano","Latte":"latte","Cappuccino":"cappuccino","Mocha":"mocha","Iced Coffee":"iced","Cold Brew":"coldbrew","Iced Latte":"iced","Iced Mocha":"icedmocha","Iced Caramel Macchiato":"caramel","Brown Sugar Shaken Espresso":"brown","Iced White Chocolate Cinnamon Dolce Latte":"white","Hazelnut Cream Americano":"hazelnut"};
+    c.dataset.kind=kinds[d.name]||"latte";
     c.innerHTML=`<div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
     c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
    });
