@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2b1b14">
+<title>Mocha Marc's</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#f7efe4;--card:#fffaf3;--ink:#342219;--muted:#806b5d;--accent:#8a552f;--line:#e6d7c8;--ok:#2e6a45}
+*{box-sizing:border-box}body{margin:0;font-family:ui-rounded,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:18px 16px 8px;text-align:center}header img{width:150px;height:150px;object-fit:contain;border-radius:50%}
+main{max-width:760px;margin:auto;padding:8px 14px 90px}.tabs{display:flex;gap:8px;position:sticky;top:0;background:rgba(247,239,228,.95);padding:10px 0;z-index:2}
+button,.btn,select,input,textarea{font:inherit}.tabs button,.primary,.secondary{border:0;border-radius:14px;padding:12px 14px;font-weight:700}.tabs button{flex:1;background:#eadbcb;color:var(--ink)}.tabs button.active,.primary{background:var(--accent);color:white}.secondary{background:#eadbcb;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 18px #4a2d1710}.drink{display:flex;justify-content:space-between;align-items:center;gap:12px}.drink h3{margin:0 0 4px}.small{font-size:.9rem;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+label{display:block;font-weight:700;margin:12px 0 6px}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:white;padding:12px;color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px}.chip.on{background:#eadbcb;border-color:#b98c66}
+.hidden{display:none!important}.status{font-weight:800}.New{color:#8a552f}.Making{color:#a56b00}.Ready{color:var(--ok)}.Done{color:var(--muted)}
+.notice{background:#fff3cd;border:1px solid #ead58b;padding:12px;border-radius:12px;margin:10px 0}.favrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}header img{width:130px;height:130px}}
+</style>
+</head>
+<body>
+<header><img src="logo.png" alt="Mocha Marc's Coffee Shop"></header>
+<main>
+<div class="tabs">
+<button id="tabOrder" class="active" onclick="showTab('order')">Order</button>
+<button id="tabFav" onclick="showTab('favorites')">Favorites</button>
+<button id="tabMine" onclick="showTab('mine')">My Orders</button>
+<button id="tabBarista" onclick="showTab('barista')">Barista</button>
+</div>
+
+<section id="order">
+<div class="card">
+<label>Your name</label><input id="customerName" autocomplete="name" placeholder="First name">
+<div id="menu"></div>
+</div>
+</section>
+
+<section id="customize" class="hidden">
+<div class="card">
+<button class="secondary" onclick="backToMenu()">← Back</button>
+<h2 id="drinkTitle"></h2><p id="specialtyNote" class="small hidden">Marc's specialty recipe. Recipe details are kept private.</p>
+<div id="shotWrap"><label>Espresso shots</label><select id="shots"></select></div>
+<div id="milkWrap"><label>Milk</label><select id="milk"><option>2% Milk</option><option>Oat Milk</option></select></div>
+<div id="syrupWrap"><label>Syrups</label><div id="syrups" class="chips"></div></div>
+<div id="sauceWrap"><label>Sauces</label><div id="sauces" class="chips"></div></div>
+<div id="foamWrap"><label><input type="checkbox" id="foam" style="width:auto"> Add Cold Foam</label></div>
+<label>Special instructions</label><textarea id="notes" rows="3" placeholder="Optional"></textarea>
+<div class="favrow"><button class="primary" onclick="submitOrder()">Send Order to Marc</button><button class="secondary" onclick="saveFavorite()">♡ Save Favorite</button></div>
+<div id="msg"></div>
+</div>
+</section>
+
+<section id="favorites" class="hidden"><div id="favList"></div></section>
+<section id="mine" class="hidden"><div id="myOrders"></div></section>
+
+<section id="barista" class="hidden">
+<div id="pinGate" class="card"><h2>Marc's Barista Board</h2><label>PIN</label><input id="pin" inputmode="numeric" type="password"><button class="primary" style="margin-top:10px" onclick="unlock()">Open Board</button></div>
+<div id="board" class="hidden"><div class="card"><h2>Barista Board</h2><button class="secondary" onclick="loadBoard()">Refresh</button><div id="boardOrders"></div></div></div>
+</section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://trgakqjujyvvumpbfurt.supabase.co";
+const SUPABASE_KEY = "sb_publishable_A8qguEaqgKw6UxS7U9Bi0g_Pk5PV0Sh";
+const drinks = [
+ {name:"Espresso",type:"regular",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false},
+ {name:"Americano",type:"regular",shots:[1,2,3],milk:false,syrups:true,sauces:false,foam:false},
+ {name:"Latte",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:false},
+ {name:"Cappuccino",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:false,foam:false},
+ {name:"Mocha",type:"regular",shots:[1,2,3],milk:true,syrups:true,sauces:true,foam:false},
+ {name:"Flat White",type:"regular",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:false},
+ {name:"Iced Coffee",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:false,foam:true},
+ {name:"Cold Brew",type:"regular",shots:[0,1,2,3],milk:true,syrups:true,sauces:true,foam:true},
+ {name:"Iced Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
+ {name:"Iced Mocha",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
+ {name:"Iced Caramel Macchiato",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
+ {name:"Brown Sugar Shaken Espresso",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
+ {name:"Iced White Chocolate Cinnamon Dolce Latte",type:"specialty",shots:[1,2,3],milk:true,syrups:false,sauces:false,foam:true},
+ {name:"Hazelnut Cream Americano",type:"specialty",shots:[1,2,3],milk:false,syrups:false,sauces:false,foam:false}
+];
+const syrupNames=["Hazelnut","Vanilla","Cinnamon Dolce","Caramel","Salted Caramel","Brown Sugar"];
+const sauceNames=["White Chocolate","Caramel Sauce"];
+let current=null, chosenSyrups=[], chosenSauces=[];
+
+function showTab(id){
+ ["order","customize","favorites","mine","barista"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));
+ ["Order","Fav","Mine","Barista"].forEach(x=>document.getElementById("tab"+x)?.classList.remove("active"));
+ if(id==="order")tabOrder.classList.add("active"); if(id==="favorites"){tabFav.classList.add("active");renderFavorites()}
+ if(id==="mine"){tabMine.classList.add("active");loadMyOrders()} if(id==="barista")tabBarista.classList.add("active");
+}
+function renderMenu(){
+ menu.innerHTML="";
+ for(const group of ["regular","specialty"]){
+   const h=document.createElement("h2");h.textContent=group==="regular"?"Coffee":"Marc's Specialty Drinks";menu.appendChild(h);
+   drinks.filter(d=>d.type===group).forEach(d=>{
+    const c=document.createElement("div");c.className="card drink";
+    c.innerHTML=`<div><h3>${d.name}</h3><div class="small">${d.type==="specialty"?"Marc's house specialty":"Made to order"}</div></div><button class="primary">Choose</button>`;
+    c.querySelector("button").onclick=()=>chooseDrink(d);menu.appendChild(c);
+   });
+ }
+}
+function chips(el,names,target){el.innerHTML="";names.forEach(n=>{let b=document.createElement("button");b.className="chip";b.textContent=n;b.onclick=()=>{let i=target.indexOf(n);if(i>=0)target.splice(i,1);else target.push(n);b.classList.toggle("on")};el.appendChild(b)})}
+function chooseDrink(d,preset=null){
+ current=d;chosenSyrups=[...(preset?.syrups||[])];chosenSauces=[...(preset?.sauces||[])];
+ drinkTitle.textContent=d.name; specialtyNote.classList.toggle("hidden",d.type!=="specialty");
+ shotWrap.classList.toggle("hidden",!d.shots); shots.innerHTML=(d.shots||[]).map(x=>`<option value="${x}">${x} shot${x===1?"":"s"}</option>`).join("");
+ if(preset?.shots!=null) shots.value=preset.shots;
+ milkWrap.classList.toggle("hidden",!d.milk); if(preset?.milk)milk.value=preset.milk;
+ syrupWrap.classList.toggle("hidden",!d.syrups); sauceWrap.classList.toggle("hidden",!d.sauces); foamWrap.classList.toggle("hidden",!d.foam);
+ foam.checked=!!preset?.foam; notes.value=preset?.notes||""; chips(syrups,syrupNames,chosenSyrups);chips(sauces,sauceNames,chosenSauces);
+ document.querySelectorAll("#syrups .chip").forEach(b=>b.classList.toggle("on",chosenSyrups.includes(b.textContent)));
+ document.querySelectorAll("#sauces .chip").forEach(b=>b.classList.toggle("on",chosenSauces.includes(b.textContent)));
+ order.classList.add("hidden");customize.classList.remove("hidden");
+}
+function backToMenu(){customize.classList.add("hidden");order.classList.remove("hidden")}
+function orderPayload(){
+ return {drink:current.name,milk:current.milk?milk.value:null,shots:current.shots?Number(shots.value):null,
+ customizations:{syrups:current.syrups?chosenSyrups:[],sauces:current.sauces?chosenSauces:[],cold_foam:current.foam?foam.checked:false},
+ notes:notes.value.trim()};
+}
+async function api(path,opt={}){
+ const headers={"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":"return=representation",...(opt.headers||{})};
+ const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...opt,headers}); if(!r.ok)throw new Error(await r.text()); return r.status===204?null:r.json();
+}
+function deviceId(){let x=localStorage.mmDevice;if(!x){x=crypto.randomUUID();localStorage.mmDevice=x}return x}
+async function submitOrder(){
+ const name=customerName.value.trim(); if(!name){msg.innerHTML='<div class="notice">Enter your name first.</div>';return}
+ localStorage.mmName=name; const p=orderPayload();
+ try{
+  const rows=await api("orders",{method:"POST",body:JSON.stringify({customer_name:name,drink:p.drink,milk:p.milk,shots:p.shots,customizations:{...p.customizations,device_id:deviceId()},notes:p.notes,status:"New"})});
+  const ids=JSON.parse(localStorage.mmOrderIds||"[]"); if(rows?.[0]?.id)ids.push(rows[0].id);localStorage.mmOrderIds=JSON.stringify(ids);
+  msg.innerHTML='<div class="notice">☕ Order sent to Marc!</div>';
+ }catch(e){msg.innerHTML='<div class="notice">Could not send order. '+e.message+'</div>'}
+}
+function saveFavorite(){
+ const p=orderPayload(); const name=prompt("Name this favorite:",current.name);if(!name)return;
+ const fs=JSON.parse(localStorage.mmFavs||"[]");fs.push({name,...p});localStorage.mmFavs=JSON.stringify(fs);alert("Favorite saved.");
+}
+function renderFavorites(){
+ const fs=JSON.parse(localStorage.mmFavs||"[]");favList.innerHTML=fs.length?"":"<div class='card'>No favorites saved yet.</div>";
+ fs.forEach((f,i)=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${f.name}</h3><div class="small">${f.drink}</div><div class="favrow"><button class="primary">Order Again</button><button class="secondary">Delete</button></div>`;
+ c.children[2].children[0].onclick=()=>{const d=drinks.find(x=>x.name===f.drink);showTab("order");chooseDrink(d,f)};
+ c.children[2].children[1].onclick=()=>{fs.splice(i,1);localStorage.mmFavs=JSON.stringify(fs);renderFavorites()};favList.appendChild(c)});
+}
+async function loadMyOrders(){
+ const ids=JSON.parse(localStorage.mmOrderIds||"[]"); if(!ids.length){myOrders.innerHTML="<div class='card'>No orders from this device yet.</div>";return}
+ try{const rows=await api(`orders?select=id,created_at,drink,status,milk,shots,notes&order=created_at.desc&id=in.(${ids.join(",")})`);
+ myOrders.innerHTML=rows.map(r=>`<div class="card"><h3>${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${new Date(r.created_at).toLocaleString()}</div></div>`).join("")}
+ catch(e){myOrders.innerHTML="<div class='notice'>Could not load orders.</div>"}
+}
+function unlock(){if(pin.value==="1973"){pinGate.classList.add("hidden");board.classList.remove("hidden");loadBoard()}else alert("Incorrect PIN")}
+async function loadBoard(){
+ try{const rows=await api("orders?select=id,created_at,customer_name,drink,milk,shots,customizations,notes,status&status=neq.Done&order=created_at.asc");
+ boardOrders.innerHTML=rows.length?"":"<p>No active orders.</p>";
+ rows.forEach(r=>{let c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${r.customer_name} — ${r.drink}</h3><div class="status ${r.status}">${r.status}</div><div class="small">${r.milk||""} ${r.shots!=null?(" • "+r.shots+" shots"):""}</div>${r.notes?`<p>${r.notes}</p>`:""}<div class="favrow"></div>`;
+ ["New","Making","Ready","Done"].forEach(s=>{let b=document.createElement("button");b.className="secondary";b.textContent=s;b.onclick=()=>setStatus(r.id,s);c.lastElementChild.appendChild(b)});boardOrders.appendChild(c)});
+ }catch(e){boardOrders.innerHTML="<div class='notice'>Board is read-only until secure Marc update permissions are enabled in Supabase.</div>"}
+}
+async function setStatus(id,status){alert("Status updates need the secure Marc admin backend enabled before this button can safely work.");}
+renderMenu(); if(localStorage.mmName)customerName.value=localStorage.mmName;
+</script>
+</body></html>
